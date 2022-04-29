@@ -283,12 +283,15 @@ namespace Files
         visited.insert(fileName);
 
         // Report failures
+        // CoDiPack4OpenFOAM Always depress the "could not open" warning.
+        /*
         if (!infile && !optQuiet)
         {
-            std::cerr
-                << EXENAME ": could not open '"
-                << fileName << "' for source file '"
-                << sourceFile << "'";
+             CoDiPack4OpenFOAM Depress this warning
+	          std::cerr
+	              << EXENAME ": could not open '"
+	              << fileName << "' for source file '"
+	              << sourceFile << "'";
 
             if (dirs.size())
             {
@@ -297,7 +300,7 @@ namespace Files
 
             std::cerr << '\n' << std::flush;
         }
-
+        */ 
         return infile;
     }
 

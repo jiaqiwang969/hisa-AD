@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2018 OpenCFD Ltd.
+     \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -23,33 +23,97 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "instant.H"
-#include "Time.H"
-#include <cstdlib>
-
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
-
-const char* const Foam::instant::typeName = "instant";
-
+#include "Instant.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::instant::instant(scalar timeValue)
+template<class T>
+Foam::Instant<T>::Instant()
 :
-    Instant<word>(timeValue, Time::timeName(timeValue))
+    val_(0),
+    key_()
 {}
 
 
-Foam::instant::instant(const word& timeName)
+template<class T>
+Foam::Instant<T>::Instant::Instant(scalar val, const T& key)
 :
-    Instant<word>(std::atof(timeName.c_str()), timeName)
+    val_(val),
+    key_(key)
 {}
 
 
-Foam::instant::instant(word&& timeName)
+template<class T>
+Foam::Instant<T>::Instant::Instant(scalar val, T&& key)
 :
-    Instant<word>(std::atof(timeName.c_str()), std::move(timeName))
+    val_(val),
+    key_(std::move(key))
 {}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+template<class T>
+bool Foam::Instant<T>::equal(scalar val) const
+{
+    return ((val_ > val - SMALL) && (val_ < val + SMALL));
+}
+
+
+template<class T>
+template<class T2>
+bool Foam::Instant<T>::equal(const Instant<T2>& other) const
+{
+    return this->equal(other.value());
+}
+
+
+// * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
+
+template<class T1, class T2>
+bool Foam::operator==(const Instant<T1>& a, const Instant<T2>& b)
+{
+    return a.equal(b.value());
+}
+
+
+template<class T1, class T2>
+bool Foam::operator!=(const Instant<T1>& a, const Instant<T2>& b)
+{
+    return !a.equal(b.value());
+}
+
+
+template<class T1, class T2>
+bool Foam::operator<(const Instant<T1>& a, const Instant<T2>& b)
+{
+    return a.value() < b.value();
+}
+
+
+template<class T1, class T2>
+bool Foam::operator>(const Instant<T1>& a, const Instant<T2>& b)
+{
+    return a.value() > b.value();
+}
+
+
+// * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
+
+template<class T>
+Foam::Istream& Foam::operator>>(Istream& is, Instant<T>& inst)
+{
+    is >> inst.value() >> inst.name();
+    return is;
+}
+
+
+template<class T>
+Foam::Ostream& Foam::operator<<(Ostream& os, const Instant<T>& inst)
+{
+    os << inst.value() << '\t' << inst.name();
+    return os;
+}
 
 
 // ************************************************************************* //

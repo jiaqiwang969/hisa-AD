@@ -27,7 +27,8 @@ License
 
 inline Foam::vectorTensorTransform::vectorTensorTransform()
 :
-    t_(Zero),
+    // CodiPack4OpenFOAM
+    t_(vector::Zero),
     R_(sphericalTensor::I),
     hasR_(false)
 {}
@@ -56,7 +57,8 @@ inline Foam::vectorTensorTransform::vectorTensorTransform(const vector& t)
 
 inline Foam::vectorTensorTransform::vectorTensorTransform(const tensor& R)
 :
-    t_(Zero),
+    // CodiPack4OpenFOAM
+    t_(vector::Zero),
     R_(R),
     hasR_(true)
 {}

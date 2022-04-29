@@ -23,117 +23,74 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "lduMatrix.H"
-
-// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
-
-namespace Foam
-{
-    defineRunTimeSelectionTable(lduMatrix::preconditioner, symMatrix);
-    defineRunTimeSelectionTable(lduMatrix::preconditioner, asymMatrix);
-}
-
+#include "LduMatrix.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::word Foam::lduMatrix::preconditioner::getName
-(
-    const dictionary& solverControls
-)
-{
-    word name;
-
-    // Handle primitive or dictionary entry
-    const entry& e =
-        solverControls.lookupEntry("preconditioner", keyType::LITERAL);
-
-    if (e.isDict())
-    {
-        e.dict().readEntry("preconditioner", name);
-    }
-    else
-    {
-        e.stream() >> name;
-    }
-
-    return name;
-}
-
-
-Foam::autoPtr<Foam::lduMatrix::preconditioner>
-Foam::lduMatrix::preconditioner::New
+template<class Type, class DType, class LUType>
+Foam::autoPtr<typename Foam::LduMatrix<Type, DType, LUType>::preconditioner>
+Foam::LduMatrix<Type, DType, LUType>::preconditioner::New
 (
     const solver& sol,
-    const dictionary& solverControls
+    const dictionary& preconditionerDict
 )
 {
-    word name;
-
-    // Handle primitive or dictionary entry
-
-    const entry& e =
-        solverControls.lookupEntry("preconditioner", keyType::LITERAL);
-
-    if (e.isDict())
-    {
-        e.dict().readEntry("preconditioner", name);
-    }
-    else
-    {
-        e.stream() >> name;
-    }
-
-    const dictionary& controls = e.isDict() ? e.dict() : dictionary::null;
+    const word preconditionerName
+    (
+        preconditionerDict.get<word>("preconditioner")
+    );
 
     if (sol.matrix().symmetric())
     {
-        auto cstrIter = symMatrixConstructorTablePtr_->cfind(name);
+        auto cstrIter =
+            symMatrixConstructorTablePtr_->cfind(preconditionerName);
 
         if (!cstrIter.found())
         {
-            FatalIOErrorInFunction(controls)
+            FatalIOErrorInFunction(preconditionerDict)
                 << "Unknown symmetric matrix preconditioner "
-                << name << nl << nl
-                << "Valid symmetric matrix preconditioners :" << endl
+                << preconditionerName << endl << endl
+                << "Valid symmetric matrix preconditioners are :" << endl
                 << symMatrixConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }
 
-        return autoPtr<lduMatrix::preconditioner>
+        return autoPtr<typename LduMatrix<Type, DType, LUType>::preconditioner>
         (
             cstrIter()
             (
                 sol,
-                controls
+                preconditionerDict
             )
         );
     }
     else if (sol.matrix().asymmetric())
     {
-        auto cstrIter = asymMatrixConstructorTablePtr_->cfind(name);
+        auto cstrIter =
+            asymMatrixConstructorTablePtr_->cfind(preconditionerName);
 
         if (!cstrIter.found())
         {
-            FatalIOErrorInFunction(controls)
+            FatalIOErrorInFunction(preconditionerDict)
                 << "Unknown asymmetric matrix preconditioner "
-                << name << nl << nl
-                << "Valid asymmetric matrix preconditioners :" << endl
+                << preconditionerName << endl << endl
+                << "Valid asymmetric matrix preconditioners are :" << endl
                 << asymMatrixConstructorTablePtr_->sortedToc()
                 << exit(FatalIOError);
         }
 
-        return autoPtr<lduMatrix::preconditioner>
+        return autoPtr<typename LduMatrix<Type, DType, LUType>::preconditioner>
         (
             cstrIter()
             (
                 sol,
-                controls
+                preconditionerDict
             )
         );
     }
 
-    FatalIOErrorInFunction(controls)
-        << "cannot solve incomplete matrix, "
+    FatalIOErrorInFunction(preconditionerDict)
+        << "Cannot precondition incomplete matrix, "
            "no diagonal or off-diagonal coefficient"
         << exit(FatalIOError);
 

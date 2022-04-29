@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2017 OpenFOAM Foundation
-     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2018 OpenCFD Ltd.
+     \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -22,21 +22,22 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::instant
+    Foam::Instant
 
 Description
-    An instant of time. Contains the time value and name.
+    A tuple of value and key.
+    The value often corresponds to a time value, thus the naming of the class.
+    The key will usually be a time name or a file name etc.
 
 SourceFiles
-    instant.C
+    Instant.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef instant_H
-#define instant_H
+#ifndef Instant_H
+#define Instant_H
 
-#include "word.H"
-#include "Instant.H"
+#include "scalar.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,57 +45,132 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class instant Declaration
+                           Class Instant Declaration
 \*---------------------------------------------------------------------------*/
 
-class instant
-:
-    public Instant<word>
+template<class T>
+class Instant
 {
+    // Private Data
+
+        //- The value (eg, time)
+        scalar val_;
+
+        //- The name/key
+        T key_;
+
+
 public:
 
-    // Static Data Members
+    // Public classes
 
-        static const char* const typeName;
+        //- Less function for sorting
+        struct less
+        {
+            bool operator()(const Instant& a, const Instant& b) const
+            {
+                return a.value() < b.value();
+            }
+        };
 
 
     // Constructors
 
-        //- Copy and move construct from components
-        using Instant<word>::Instant;
+        //- Construct null, with value = 0.
+        Instant();
 
-        //- Construct null, with time-value = 0.
-        instant() = default;
+        //- Copy construct from components
+        Instant(scalar val, const T& key);
+
+        //- Move construct from components
+        Instant(scalar val, T&& key);
 
         //- Copy construct
-        instant(const instant&) = default;
+        Instant(const Instant&) = default;
 
         //- Move construct
-        instant(instant&&) = default;
+        Instant(Instant&&) = default;
 
-        //- Construct from timeValue, auto generating the name
-        explicit instant(scalar timeValue);
 
-        //- Construct from timeName, parsing timeName for a value
-        explicit instant(const word& timeName);
+    // Member Functions
 
-        //- Construct from timeName, parsing timeName for a value
-        explicit instant(word&& timeName);
+        //- The value (const access)
+        scalar value() const
+        {
+            return val_;
+        }
+
+        //- The value (non-const access)
+        scalar& value()
+        {
+            return val_;
+        }
+
+        //- The name/key (const access)
+        const T& name() const
+        {
+            return key_;
+        }
+
+        //- The name/key (non-const access)
+        T& name()
+        {
+            return key_;
+        }
+
+        //- True if values are equal (includes SMALL for rounding)
+        bool equal(scalar val) const;
+
+        //- True if values are equal (includes SMALL for rounding)
+        template<class T2>
+        bool equal(const Instant<T2>& other) const;
 
 
     // Operators
 
         //- Copy assignment
-        instant& operator=(const instant&) = default;
+        Instant& operator=(const Instant&) = default;
 
         //- Move assignment
-        instant& operator=(instant&&) = default;
-
+        Instant& operator=(Instant&&) = default;
 };
+
+
+// IOstream Operators
+
+template<class T> Istream& operator>>(Istream& is, Instant<T>& inst);
+template<class T> Ostream& operator<<(Ostream& os, const Instant<T>& inst);
+
+
+// Global Operators
+
+//- Compare instant values for equality
+template<class T1, class T2>
+bool operator==(const Instant<T1>& a, const Instant<T2>& b);
+
+//- Compare instant values for inequality
+template<class T1, class T2>
+bool operator!=(const Instant<T1>& a, const Instant<T2>& b);
+
+//- Compare instant values for less-than
+template<class T1, class T2>
+bool operator<(const Instant<T1>& a, const Instant<T2>& b);
+
+//- Compare instant values for greater-than
+template<class T1, class T2>
+bool operator>(const Instant<T1>& a, const Instant<T2>& b);
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#ifdef NoRepository
+    #include "Instant.C"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

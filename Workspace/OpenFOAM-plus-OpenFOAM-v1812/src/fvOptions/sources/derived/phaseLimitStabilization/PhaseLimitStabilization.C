@@ -23,16 +23,64 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "makeFvOption.H"
 #include "PhaseLimitStabilization.H"
+#include "fvMatrices.H"
+#include "fvmSup.H"
+#include "uniformDimensionedFields.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-makeFvOption(PhaseLimitStabilization, scalar);
-makeFvOption(PhaseLimitStabilization, vector);
-makeFvOption(PhaseLimitStabilization, sphericalTensor);
-makeFvOption(PhaseLimitStabilization, symmTensor);
-makeFvOption(PhaseLimitStabilization, tensor);
+template<class Type>
+Foam::fv::PhaseLimitStabilization<Type>::PhaseLimitStabilization
+(
+    const word& name,
+    const word& modelType,
+    const dictionary& dict,
+    const fvMesh& mesh
+)
+:
+    option(name, modelType, dict, mesh),
+    fieldName_(coeffs_.get<word>("field")),
+    rateName_(coeffs_.get<word>("rate")),
+    residualAlpha_(coeffs_.get<scalar>("residualAlpha"))
+{
+    fieldNames_.setSize(1, fieldName_);
+    applied_.setSize(1, false);
+}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+template<class Type>
+void Foam::fv::PhaseLimitStabilization<Type>::addSup
+(
+    const volScalarField& alpha,
+    const volScalarField& rho,
+    fvMatrix<Type>& eqn,
+    const label fieldi
+)
+{
+    const GeometricField<Type, fvPatchField, volMesh>& psi = eqn.psi();
+
+    uniformDimensionedScalarField& rate =
+        mesh_.lookupObjectRef<uniformDimensionedScalarField>(rateName_);
+
+    eqn -= fvm::Sp(max(residualAlpha_ - alpha, scalar(0))*rho*rate, psi);
+}
+
+
+template<class Type>
+bool Foam::fv::PhaseLimitStabilization<Type>::read(const dictionary& dict)
+{
+    if (option::read(dict))
+    {
+        coeffs_.readEntry("residualAlpha", residualAlpha_);
+
+        return true;
+    }
+
+    return false;
+}
 
 
 // ************************************************************************* //

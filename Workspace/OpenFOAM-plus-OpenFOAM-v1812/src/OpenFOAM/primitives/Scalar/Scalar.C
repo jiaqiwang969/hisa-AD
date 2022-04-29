@@ -141,8 +141,9 @@ Istream& operator>>(Istream& is, Scalar& val)
     }
 
     if (t.isNumber())
-    {
-        val = t.number();
+    { 
+        // CoDiPack4OpenFOAM  
+        val = t.number().getValue();
     }
     else
     {

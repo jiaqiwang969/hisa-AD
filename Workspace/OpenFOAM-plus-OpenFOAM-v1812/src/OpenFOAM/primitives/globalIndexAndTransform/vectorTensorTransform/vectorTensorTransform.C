@@ -34,15 +34,17 @@ const char* const Foam::vectorTensorTransform::typeName =
 
 const Foam::vectorTensorTransform Foam::vectorTensorTransform::zero
 (
-    Zero,
-    Zero,
+    // CodiPack4OpenFOAM
+    vector::Zero,
+    tensor::Zero,
     false
 );
 
 
 const Foam::vectorTensorTransform Foam::vectorTensorTransform::I
 (
-    Zero,
+    // CodiPack4OpenFOAM
+    vector::Zero,
     sphericalTensor::I,
     false
 );

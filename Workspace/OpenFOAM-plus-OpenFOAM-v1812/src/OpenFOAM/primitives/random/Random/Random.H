@@ -64,8 +64,10 @@ class Random
         //- Random number generator on the int32 interval [0,2^31)
         Rand48 generator_;
 
+
         //- Uniform distribution on the scalar interval [0,1]
-        std::uniform_real_distribution<scalar> uniform01_;
+        //  CoDiPack4OpenFOAM
+        std::uniform_real_distribution<double> uniform01_;
 
         //- Is there a gaussian sample cached?
         bool hasGaussSample_;

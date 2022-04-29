@@ -38,7 +38,8 @@ Foam::tensor Foam::spatialTransform::Erx() const
 inline Foam::spatialTransform::spatialTransform()
 :
     E_(tensor::I),
-    r_(Zero)
+    // CodiPack4OpenFOAM
+    r_(vector::Zero)
 {}
 
 
@@ -119,7 +120,8 @@ inline Foam::spatialTransform::operator spatialTensor() const
 {
     return spatialTensor
     (
-        E_,             Zero,
+     // CodiPack4OpenFOAM
+        E_,             tensor::Zero,
        -Erx(),          E_
     );
 }
@@ -178,10 +180,11 @@ inline Foam::vector Foam::spatialTransform::transformPoint
 
 inline Foam::spatialTransform::transpose::operator spatialTensor() const
 {
+    // CodiPack4OpenFOAM
     return spatialTensor
     (
         X_.E().T(),    -X_.Erx().T(),
-        Zero,           X_.E().T()
+        tensor::Zero,           X_.E().T()
     );
 }
 
@@ -203,10 +206,11 @@ inline Foam::spatialVector Foam::spatialTransform::transpose::operator&
 
 inline Foam::spatialTransform::dual::operator spatialTensor() const
 {
+    // CodiPack4OpenFOAM
     return spatialTensor
     (
         X_.E(),        -X_.Erx(),
-        Zero,           X_.E()
+        tensor::Zero,           X_.E()
     );
 }
 
@@ -254,25 +258,29 @@ namespace Foam
 //- Rotational spatial transformation tensor about the x-axis by omega radians
 inline spatialTransform Xrx(const scalar& omega)
 {
-    return spatialTransform(Rx(omega), Zero);
+    // CodiPack4OpenFOAM
+    return spatialTransform(Rx(omega), vector::Zero);
 }
 
 //- Rotational spatial transformation tensor about the y-axis by omega radians
 inline spatialTransform Xry(const scalar& omega)
 {
-    return spatialTransform(Ry(omega), Zero);
+    // CodiPack4OpenFOAM
+    return spatialTransform(Ry(omega), vector::Zero);
 }
 
 //- Rotational spatial transformation tensor about the z-axis by omega radians
 inline spatialTransform Xrz(const scalar& omega)
 {
-    return spatialTransform(Rz(omega), Zero);
+    // CodiPack4OpenFOAM
+    return spatialTransform(Rz(omega), vector::Zero);
 }
 
 //- Rotational spatial transformation tensor about axis a by omega radians
 inline spatialTransform Xr(const vector& a, const scalar omega)
 {
-    return spatialTransform(Ra(a, omega), Zero);
+    // CodiPack4OpenFOAM
+    return spatialTransform(Ra(a, omega), vector::Zero);
 }
 
 //- Translational spatial transformation tensor for translation r

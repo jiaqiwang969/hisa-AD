@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,23 +22,20 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::diagonalSolver
-
-Group
-    grpLduMatrixSolvers
+    Foam::DiagonalSolver
 
 Description
-    Foam::diagonalSolver
+    Foam::DiagonalSolver
 
 SourceFiles
-    diagonalSolver.C
+    DiagonalSolver.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef diagonalSolver_H
-#define diagonalSolver_H
+#ifndef DiagonalSolver_H
+#define DiagonalSolver_H
 
-#include "lduMatrix.H"
+#include "LduMatrix.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,20 +43,21 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                       Class diagonalSolver Declaration
+                           Class DiagonalSolver Declaration
 \*---------------------------------------------------------------------------*/
 
-class diagonalSolver
+template<class Type, class DType, class LUType>
+class DiagonalSolver
 :
-    public lduMatrix::solver
+    public LduMatrix<Type, DType, LUType>::solver
 {
     // Private Member Functions
 
         //- No copy construct
-        diagonalSolver(const diagonalSolver&) = delete;
+        DiagonalSolver(const DiagonalSolver&) = delete;
 
         //- No copy assignment
-        void operator=(const diagonalSolver&) = delete;
+        void operator=(const DiagonalSolver&) = delete;
 
 
 public:
@@ -70,37 +68,34 @@ public:
 
     // Constructors
 
-        //- Construct from matrix and solver controls
-        diagonalSolver
+        //- Construct from matrix
+        DiagonalSolver
         (
             const word& fieldName,
-            const lduMatrix& matrix,
-            const FieldField<Field, scalar>& interfaceBouCoeffs,
-            const FieldField<Field, scalar>& interfaceIntCoeffs,
-            const lduInterfaceFieldPtrsList& interfaces,
-            const dictionary& solverControls
+            const LduMatrix<Type, DType, LUType>& matrix,
+            const dictionary& solverDict
         );
 
 
     // Member Functions
 
-        //- Read and reset the solver parameters from the given stream
-        void read(const dictionary&)
-        {}
+        //- Read and reset the solver parameters from the given dictionary
+        void read(const dictionary& solverDict);
 
         //- Solve the matrix with this solver
-        solverPerformance solve
-        (
-            scalarField& psi,
-            const scalarField& source,
-            const direction cmpt=0
-        ) const;
+        virtual SolverPerformance<Type> solve(Field<Type>& psi) const;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#ifdef NoRepository
+    #include "DiagonalSolver.C"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
